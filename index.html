@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QOTION - KING K.A ENTERPRISE LTD</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <img src="images/logo.png" alt="Logo">
+        <h1>QOTION</h1>
+        <p>KING K.A ENTERPRISE LTD</p>
+    </div>
+
+    <div class="main">
+
+        <div class="card">
+            <h2>Create Quotation</h2>
+
+            <label>Customer Name</label>
+            <input type="text" id="customer" placeholder="Enter customer name">
+
+            <label>Product</label>
+            <select id="product">
+                <option value="sticker">Sticker</option>
+                <option value="banner">Banner</option>
+                <option value="oneway">One Way</option>
+                <option value="backlight">Backlight</option>
+            </select>
+
+            <div class="flex">
+                <div>
+                    <label>Width</label>
+                    <input type="number" id="width" placeholder="0" step="any">
+                </div>
+                <div>
+                    <label>Height</label>
+                    <input type="number" id="height" placeholder="0" step="any">
+                </div>
+            </div>
+
+            <label>Unit</label>
+            <select id="unit">
+                <option value="m">Meters</option>
+                <option value="cm">Centimeters</option>
+            </select>
+
+            <label>Quantity</label>
+            <input type="number" id="qty" value="1" min="1">
+
+            <h2 style="margin-top: 35px;">Add Materials (+2,000 RWF Markup Added Auto)</h2>
+
+            <div class="flex">
+                <div>
+                    <label>Material Name</label>
+                    <input type="text" id="materialName" placeholder="e.g. Wire">
+                </div>
+                <div>
+                    <label>Base Factory Cost (RWF)</label>
+                    <input type="number" id="materialPrice" value="0">
+                </div>
+                <div>
+                    <label>Qty</label>
+                    <input type="number" id="materialQty" value="1" min="1">
+                </div>
+            </div>
+
+            <button class="btn" onclick="addMaterial()" style="background: #444; box-shadow: none; margin-top: 15px;">
+                + Save Material
+            </button>
+
+            <div id="savedMaterials"></div>
+
+            <label>Notes / Remarks</label>
+            <textarea id="notes" placeholder="Add custom terms or instructions here..."></textarea>
+
+            <button class="btn" onclick="calculatePrice()">
+                Calculate Price
+            </button>
+
+            <button class="download-btn" onclick="downloadPDF()">
+                Download Export PDF
+            </button>
+
+            <div class="result">
+                <div class="line">
+                    <span>Computed Size</span>
+                    <strong id="sizeResult">0.00 m²</strong>
+                </div>
+                <div class="line">
+                    <span>Printing Fee</span>
+                    <strong id="printingResult">0 RWF</strong>
+                </div>
+                <div class="line">
+                    <span>Branding / Installation</span>
+                    <strong id="brandingResult">0 RWF</strong>
+                </div>
+                <div class="line">
+                    <span>Design Fee</span>
+                    <strong id="designResult">0 RWF</strong>
+                </div>
+                <div class="line">
+                    <span>Additional Materials (With your Margin)</span>
+                    <strong id="materialsResult">0 RWF</strong>
+                </div>
+                <div class="total" id="totalResult">
+                    TOTAL : 0 RWF
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>System Pricing Rules</h2>
+            <div class="rules-p">
+                <div class="rules-group">
+                    <b>Sticker</b><br>
+                    Printing = 5,500 RWF / m²<br>
+                    Branding = 5,000 RWF Base (+2,000 RWF if Size > 1m²)
+                </div>
+                <div class="rules-group">
+                    <b>Banner</b><br>
+                    Printing = 5,000 RWF / m²<br>
+                    Branding = No Branding Fee
+                </div>
+                <div class="rules-group">
+                    <b>One Way</b><br>
+                    Printing = 6,500 RWF / m²<br>
+                    Branding = 5,000 RWF Base (+2,000 RWF if Size > 1m²)
+                </div>
+                <div class="rules-group">
+                    <b>Backlight</b><br>
+                    Printing = 7,000 RWF / m²<br>
+                    Branding = No Branding Fee
+                </div>
+                <div class="rules-group" style="border-left-color: #28a745; background: #f6ffed;">
+                    <b>Fixed Configurations</b><br>
+                    Design Fee = 10,000 RWF Flat for all items<br>
+                    Material Profit = Auto +2,000 RWF added per item row
+                </div>
+                
+                <div id="internalProfitCard" style="display:none; margin-top: 20px; padding: 15px; background: #e6f7ff; border-radius: 12px; border: 1px solid #91d5ff;">
+                    <b style="color: #0050b3;">🛠️ Internal Profit Tracking</b><br>
+                    <div style="font-size: 14px; margin-top: 5px; color: #333;">
+                        Design Flat Fee: 10,000 RWF<br>
+                        Material Markups: <span id="trackMatProfit">0 RWF</span><br>
+                        Branding Upsize: <span id="trackBrandProfit">0 RWF</span><br>
+                        <strong>Total Safe Take: <span id="trackTotalProfit">10,000 RWF</span></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="quote" id="quotation">
+        <div class="quote-title">OFFICIAL CUSTOMER QUOTATION</div>
+        
+        <div class="quote-header">
+            <div>
+                <img src="images/logo.png" alt="Logo">
+            </div>
+            <div class="company">
+                <h2>KING K.A ENTERPRISE LTD</h2>
+                <p>
+                    TEL: +250 784 737 138<br>
+                    EMAIL: kingkaenterprise@gmail.com<br>
+                    DATE: <span id="date"></span>
+                </p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Product Item</th>
+                    <th>Calculated Size</th>
+                    <th>Quantity</th>
+                    <th>Base Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="qCustomer">---</td>
+                    <td id="qProduct">---</td>
+                    <td id="qSize">---</td>
+                    <td id="qQty">---</td>
+                    <td id="qTotal">---</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div id="materialsTable"></div>
+
+        <div class="grand" id="grandTotal">
+            TOTAL : 0 RWF
+        </div>
+
+        <div class="footer">
+            Thank you for choosing KING K.A ENTERPRISE LTD.<br>
+            All prices subject to company terms of transaction.
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
